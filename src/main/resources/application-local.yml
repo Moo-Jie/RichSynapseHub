@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: RichSynapseHub
+  ai:
+    dashscope:
+      api-key: sk-e53049c2b08d47f095011192a9010f8c
+      chat:
+        options:
+          model: qwen-plus
