@@ -1,15 +1,14 @@
-package com.rich.richsynapsehub.controller.test;
+package com.rich.richsynapsehub.utils.doChat;
 
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 
 
 /**
- * Spring AI 单次对话连接测试
+ * Spring AI 单次对话连
  *
  * @author DuRuiChi
  * @return
