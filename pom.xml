@@ -84,7 +84,13 @@
             <artifactId>kryo</artifactId>
             <version>5.6.2</version>
         </dependency>
-
+        <!-- Spring AI document-reader 读取 RAG -->
+        <!-- 源：https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html#_markdown  -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-markdown-document-reader</artifactId>
+            <version>1.0.0-M6</version>
+        </dependency>
         <!-- jsonschema  -->
         <dependency>
             <groupId>com.github.victools</groupId>
