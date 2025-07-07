@@ -1,4 +1,4 @@
-package com.rich.richsynapsehub.advisor.config;
+package com.rich.richsynapsehub.advisor.rag;
 
 import com.alibaba.cloud.ai.dashscope.api.DashScopeApi;
 import com.alibaba.cloud.ai.dashscope.rag.DashScopeDocumentRetriever;

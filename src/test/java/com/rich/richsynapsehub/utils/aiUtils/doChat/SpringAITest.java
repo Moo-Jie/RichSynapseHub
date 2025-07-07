@@ -1,7 +1,7 @@
-package com.rich.richsynapsehub;
+package com.rich.richsynapsehub.utils.aiUtils.doChat;
 
 import cn.hutool.core.util.RandomUtil;
-import com.rich.richsynapsehub.utils.doChat.SpringAiChat;
+import com.rich.richsynapsehub.utils.ai.doChat.SpringAiChat;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,9 +22,9 @@ public class SpringAITest {
     void doChat() {
         // 对话房间号
         String conversationId = RandomUtil.randomString(5);
-        String q1 = "|";
-        String q2 = "开始面试";
-        String q3 = "我叫小明，是一个java开发工程师";
+        String q1 = "我叫小明，是一个java开发工程师，学历是本科。";
+        String q2 = "请你基于我的学历给出职业规划，最好附上图片资源。";
+        String q3 = "基于我们的对话，生成一份 PDF 总结报告。";
         // 指定同一个会话 ID
         String res1 = springAiChat.chat(q1, conversationId);
         if( res1.isEmpty() ) {
@@ -49,8 +49,10 @@ public class SpringAITest {
      **/
     @Test
     void doStructuredOutputChat() {
-        String q1 = "你好，我是一个刚毕业的金融专业学生，学历是本科";
+        // 对话房间号
+        String conversationId = RandomUtil.randomString(5);
+        String q1 = "我叫小明，是一个java开发工程师";
         // 指定同一个会话 ID
-        springAiChat.structuredOutputChat(q1, "001");
+        springAiChat.structuredOutputChat(q1, "conversationId");
     }
 }

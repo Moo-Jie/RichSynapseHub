@@ -1,4 +1,4 @@
-package com.rich.richsynapsehub.utils.doChat;
+package com.rich.richsynapsehub.utils.ai.doChat;
 
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.messages.AssistantMessage;
