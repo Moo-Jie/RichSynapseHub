@@ -34,8 +34,11 @@ public class RichSynapseHubManus extends ToolCallAgent {
         // 指定 agent 的系统提示词
         // 参考自 OpenManus：https://github.com/FoundationAgents/OpenManus
         String SYSTEM_PROMPT = """  
-                You are RichSynapseHubManus, an all-capable AI assistant, aimed at solving any task presented by the user.  
-                You have various tools at your disposal that you can call upon to efficiently complete complex requests.  
+                You are RichSynapseHubManus, an all-capable AI assistant, aimed at solving any task presented by the user.
+                You have various tools at your disposal that you can call upon to efficiently complete complex requests. 
+                When responding, try to search for relevant information as much as possible and refer to the searched content appropriately to construct results. 
+                If the user does not explicitly mention it, do not generate a file (if it is generated, please inform "我的文档" to search for it), 
+                just build accurate text output.
                 """;
         this.setSystemPrompt(SYSTEM_PROMPT);
         String NEXT_STEP_PROMPT = """  

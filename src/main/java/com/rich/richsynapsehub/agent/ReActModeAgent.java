@@ -44,7 +44,7 @@ public abstract class ReActModeAgent extends BaseAgent {
                 // Acting：执行行动并返回执行结果
                 return act();
             }
-            return "本次思考完成，无需行动。";
+            return "本次思考完成，无需行动。\n ";
         } catch (Exception e) {
             // 执行失败
             return "当前 Step 执行失败：" + e.getMessage();

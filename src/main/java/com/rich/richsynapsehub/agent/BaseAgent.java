@@ -10,9 +10,11 @@ import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * agent 基础抽象类，包含基本属性通用方法
@@ -103,13 +105,27 @@ public abstract class BaseAgent {
      * @create 2025/7/7
      **/
     public SseEmitter runStream(String userPrompt) {
-        // 创建 SseEmitter ，设置 0.5 分钟超时
         SseEmitter emitter = new SseEmitter(30000L);
+        AtomicBoolean isActive = new AtomicBoolean(true); // 跟踪连接状态
 
-        // 使用线程异步处理，避免阻塞主线程
+        // 连接状态监听器
+        emitter.onTimeout(() -> {
+            isActive.set(false);
+            this.state = AgentExecutionState.ERROR;
+            log.warn("SSE connection timed out");
+        });
+
+        emitter.onCompletion(() -> {
+            isActive.set(false);
+            if (this.state == AgentExecutionState.RUNNING) {
+                this.state = AgentExecutionState.FINISHED;
+            }
+            log.info("SSE connection completed");
+        });
+
         CompletableFuture.runAsync(() -> {
             try {
-                // 校验参数
+                // 参数校验（保持不变）
                 if (userPrompt == null || userPrompt.isEmpty()) {
                     throw new IllegalArgumentException("用户对话不能为空。");
                 }
@@ -117,58 +133,52 @@ public abstract class BaseAgent {
                     throw new IllegalStateException("代理状态必须为 IDLE 才能执行。");
                 }
 
-                // 初始化状态
                 state = AgentExecutionState.RUNNING;
-                // 保存上下文列表
                 messageList.add(new UserMessage(userPrompt));
 
-                try {
-                    // Agent Loop 执行循环 ：从而使智能体在没有更多用户上下文的情况下，重复推理出来延申内容
-                    while (this.state == AgentExecutionState.RUNNING && currentStep < maxSteps) {
-                        currentStep++;
-                        String result = "Step " + "(" + currentStep + "/" + maxSteps + ") finished:" + step() + ".";
-                        // 发送每一步的结果
-                        emitter.send(result);
-                    }
+                while (state == AgentExecutionState.RUNNING &&
+                        currentStep < maxSteps &&
+                        isActive.get()) { // 检查连接状态
 
-                    // 超出步骤限制结束
-                    if (currentStep == maxSteps) {
+                    currentStep++;
+                    String result = "执行轮次 (" + currentStep + "/" + maxSteps + ") ：" + step();
+
+                    // 仅在连接活跃时发送
+                    if (isActive.get()) {
+                        try {
+                            emitter.send(result);
+                            emitter.send("本轮思考结果：" + messageList.getLast().getText());
+                        } catch (IllegalStateException e) {
+                            log.warn("发送失败：连接已关闭");
+                            break;
+                        }
+                    }
+                }
+
+                // 仅在连接活跃时发送完成通知
+                if (isActive.get()) {
+                    if (currentStep >= maxSteps) {
                         this.state = AgentExecutionState.FINISHED;
-                        emitter.send("当前步骤已达上限： " + "(" + currentStep + "/" + maxSteps + ")");
+                        emitter.send("当前步骤已达上限 (" + currentStep + "/" + maxSteps + ")");
                     }
-
-                    // 完成 SSE 流
                     emitter.complete();
-                } catch (Exception e) {
-                    // 执行失败
-                    this.state = AgentExecutionState.ERROR;
-                    log.error("执行过程中发生错误", e);
-                    try {
-                        emitter.send("执行错误: " + e.getMessage());
-                        emitter.complete();
-                    } catch (Exception ex) {
-                        emitter.completeWithError(ex);
-                    }
-                } finally {
-                    log.info("Agent 执行结束");
                 }
             } catch (Exception e) {
-                emitter.completeWithError(e);
-            }
-        });
+                this.state = AgentExecutionState.ERROR;
+                log.error("执行错误: {}", e.getMessage());
 
-        // 设置超时和完成回调
-        emitter.onTimeout(() -> {
-            this.state = AgentExecutionState.ERROR;
-            log.warn("SSE connection timed out");
-        });
-
-        emitter.onCompletion(() -> {
-            if (this.state == AgentExecutionState.RUNNING) {
-                this.state = AgentExecutionState.FINISHED;
+                // 仅在连接活跃时发送错误
+                if (isActive.get()) {
+                    try {
+                        emitter.send("执行错误: " + e.getMessage());
+                        emitter.completeWithError(e);
+                    } catch (IOException ex) {
+                        log.warn("无法发送错误：连接已关闭");
+                    }
+                }
+            } finally {
+                log.info("Agent 执行结束");
             }
-            log.info("Agent 执行结束");
-            log.info("SSE connection completed");
         });
 
         return emitter;

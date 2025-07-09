@@ -18,8 +18,8 @@ public class AiWebScrapingTool {
     @Tool(description = "Crawl webpage content.")
     public String scrapeWebPage(@ToolParam(description = "The URL of the webpage to be crawled.") String ScrapUrl) {
         try {
-            Document doc = Jsoup.connect(ScrapUrl).get();
-            return doc.html();
+            String doc = Jsoup.connect(ScrapUrl).get().html();
+            return doc.substring(0, Math.min(doc.length(), 400) );
         } catch (IOException e) {
             return "Web crawling failed: " + e.getMessage();
         }

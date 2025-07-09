@@ -137,7 +137,10 @@ public class ToolCallAgent extends ReActModeAgent {
         setMessageList(toolCallmessages);
         // 拼装工具调用结果信息，返回给用户
         ToolResponseMessage toolResponseMessage = (ToolResponseMessage) CollUtil.getLast(toolCallmessages);
-        String results = toolResponseMessage.getResponses().stream().map(response -> response.name() + "工具执行完毕，运行结果: " + response.responseData()).collect(Collectors.joining("\n"));
+        String results = toolResponseMessage.getResponses()
+                .stream()
+                .map(response -> response.name() + "工具执行完毕，运行结果: " + response.responseData())
+                .collect(Collectors.joining("\n"));
         // 若 AI 调用了终止工具，则结束对话
         boolean terminateToolCalled = toolResponseMessage.getResponses()
                 .stream()

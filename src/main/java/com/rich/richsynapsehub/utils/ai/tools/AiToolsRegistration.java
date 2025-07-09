@@ -37,7 +37,8 @@ public class AiToolsRegistration {
         return ToolCallbacks.from(fileOperationTool,
                 aiWebScrapingTool,
                 aiNetDownloadTool,
-                aiPDFGenerationTool,
+                // TODO 待解决 PDF 生成问题
+//                aiPDFGenerationTool,
                 aiTerminateTool,
                 aiTerminalOperationTool,
                 aiWebSearchTool);
