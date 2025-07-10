@@ -1,7 +1,10 @@
 package com.rich.richsynapsehub.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import cn.hutool.core.util.RandomUtil;
 import com.rich.richsynapsehub.agent.RichSynapseHubManus;
+import com.rich.richsynapsehub.constant.UserConstant;
 import com.rich.richsynapsehub.utils.ai.doChat.SpringAiChat;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.model.ChatModel;
@@ -35,6 +38,7 @@ public class AiChatController {
      * @create 2025/7/7
      **/
     @GetMapping("/sync")
+    @SaCheckRole(value = {UserConstant.ADMIN_ROLE, UserConstant.DEFAULT_ROLE}, mode = SaMode.OR)
     public String doChatBySync(String message, String chatId) {
         if (chatId == null) {
             // 随机生成 chatId
@@ -53,6 +57,7 @@ public class AiChatController {
      * @create 2025/7/7
      **/
     @GetMapping(value = "/stream")
+    @SaCheckRole(value = {UserConstant.ADMIN_ROLE, UserConstant.DEFAULT_ROLE}, mode = SaMode.OR)
     public Flux<String> doChatByStream(String message, String chatId) {
         if (chatId == null) {
             // 随机生成 chatId
@@ -70,6 +75,7 @@ public class AiChatController {
      * @create 2025/7/7
      **/
     @GetMapping("/manus/stream")
+    @SaCheckRole(value = {UserConstant.ADMIN_ROLE, UserConstant.DEFAULT_ROLE}, mode = SaMode.OR)
     public SseEmitter doChatWithManus(String message) {
         RichSynapseHubManus richSynapseHubManus = new RichSynapseHubManus(aiUseTools, dashscopeChatModel);
         return richSynapseHubManus.runStream(message);

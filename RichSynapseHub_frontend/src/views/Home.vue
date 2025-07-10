@@ -8,8 +8,9 @@
       <div class="light-beam"></div>
       <div class="glitch-wrapper">
         <h1 class="glitch-title">
-          <img src="/src/assets/LOGO.png" alt="LOGO" class="logo">
-          <br>
+        <img src="/src/assets/LOGO.png" alt="LOGO" class="logo">
+        </h1>
+        <h1 class="glitch-title">
           <span
               v-for="(text, idx) in titleWords"
               :key="idx"
