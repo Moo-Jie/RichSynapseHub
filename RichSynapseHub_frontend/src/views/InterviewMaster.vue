@@ -179,8 +179,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
-@import url('https://fonts.googleapis.com/css2?family=Indie+Flower&family=Pacifico&family=Short+Stack&display=swap');
-
 .interView-master-container {
   display: flex;
   flex-direction: column;
@@ -243,7 +241,7 @@ onBeforeUnmount(() => {
   perspective: 800px;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Short+Stack&family=Comic+Neue:wght@700&display=swap');
+
 
 .glitch-title {
   font-family: 'Short Stack', 'Comic Neue', cursive;

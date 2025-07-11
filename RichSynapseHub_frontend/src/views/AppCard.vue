@@ -5,7 +5,7 @@
       @click="handleClick"
   >
     <div class="card-top">
-      <div class="app-icon" :class="themeClass">{{ icon }}</div>
+      <div class="app-icon" >{{ icon }}</div>
       <div class="app-info">
         <div class="app-title">{{ title }}</div>
         <div class="app-desc">{{ description }}</div>

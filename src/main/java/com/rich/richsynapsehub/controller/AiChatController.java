@@ -57,7 +57,6 @@ public class AiChatController {
      * @create 2025/7/7
      **/
     @GetMapping(value = "/stream")
-    @SaCheckRole(value = {UserConstant.ADMIN_ROLE, UserConstant.DEFAULT_ROLE}, mode = SaMode.OR)
     public Flux<String> doChatByStream(String message, String chatId) {
         if (chatId == null) {
             // 随机生成 chatId
@@ -75,7 +74,6 @@ public class AiChatController {
      * @create 2025/7/7
      **/
     @GetMapping("/manus/stream")
-    @SaCheckRole(value = {UserConstant.ADMIN_ROLE, UserConstant.DEFAULT_ROLE}, mode = SaMode.OR)
     public SseEmitter doChatWithManus(String message) {
         RichSynapseHubManus richSynapseHubManus = new RichSynapseHubManus(aiUseTools, dashscopeChatModel);
         return richSynapseHubManus.runStream(message);

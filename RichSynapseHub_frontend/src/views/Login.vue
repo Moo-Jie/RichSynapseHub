@@ -37,9 +37,8 @@ const form = ref({
 const handleLogin = async () => {
   try {
     const {data} = await loginUser(form.value);
-    if (data.code === 0) {
-      userStore.login(data.data.token, {
-        id: data.data.id,
+    if (data !== null) {
+      userStore.login({
         userName: data.data.userName,
         userAvatar: data.data.userAvatar
       });

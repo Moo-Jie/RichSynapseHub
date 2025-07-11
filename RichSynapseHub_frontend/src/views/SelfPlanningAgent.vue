@@ -215,7 +215,7 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 
-@import url('https://fonts.googleapis.com/css2?family=Short+Stack&family=Comic+Neue:wght@700&display=swap');
+
 
 .glitch-title {
   font-family: 'Short Stack', 'Comic Neue', cursive;

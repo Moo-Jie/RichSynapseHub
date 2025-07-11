@@ -9,29 +9,22 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
 // 创建axios实例
 const request = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 60000
+    timeout: 60000,
+    withCredentials: true
 })
 
 // 请求拦截器
 request.interceptors.request.use(config => {
-    const userStore = useUserStore();
-    if (userStore.token) {
-        config.headers.satoken = userStore.token;
-    }
     return config;
 });
 
 // 封装SSE连接
 export const connectSSE = (url, params, onMessage, onError) => {
-    const userStore = useUserStore();
-    const queryParams = new URLSearchParams({
-        ...params,
-        ...(userStore.token ? { satoken: userStore.token } : {})
-    }).toString();
+    const fullUrl = `${API_BASE_URL}${url}`;
 
-    const fullUrl = `${API_BASE_URL}${url}?${queryParams}`;
-
-    const eventSource = new EventSource(fullUrl);
+    const eventSource = new EventSource(fullUrl, {
+        withCredentials: true
+    });
 
 
     eventSource.onmessage = event => {

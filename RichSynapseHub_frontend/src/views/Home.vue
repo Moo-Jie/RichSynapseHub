@@ -1,30 +1,32 @@
 <template>
   <div class="home-container" :class="{ 'page-loaded': !isLoading }">
+    <nav class="user-nav">
+      <template v-if="userStore.userInfo">
+        <el-dropdown>
+          <div class="user-profile">
+            <img :src="userStore.userInfo.avatar" class="user-avatar" alt="avatar"/>
+            <span class="username">{{ truncateUsername(userStore.userInfo?.username) }}</span>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="userStore.logout()">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </template>
+      <template v-else>
+        <router-link to="/login" class="nav-link">登录</router-link>
+        <span class="nav-divider">|</span>
+        <router-link to="/register" class="nav-link">注册</router-link>
+      </template>
+    </nav>
+    <br><br><br>
+
     <div class="decorative-elements">
       <div v-for="i in 8" :key="i" class="floating-shape" :class="`shape-${i}`"></div>
     </div>
 
     <div class="header">
-      <nav class="user-nav">
-        <template v-if="userStore.userInfo">
-          <el-dropdown>
-            <div class="user-profile">
-              <img :src="userStore.userInfo.avatar" class="user-avatar" alt="avatar"/>
-              <span class="username">{{ truncateUsername(userStore.userInfo.username) }}</span>
-            </div>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="userStore.logout()">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </template>
-        <template v-else>
-          <router-link to="/login" class="nav-link">登录</router-link>
-          <span class="nav-divider">|</span>
-          <router-link to="/register" class="nav-link">注册</router-link>
-        </template>
-      </nav>
       <div class="light-beam"></div>
       <div class="glitch-wrapper">
         <h1 class="glitch-title">
@@ -73,6 +75,7 @@ onMounted(() => {
 });
 // 用户名截断函数（优化版）
 const truncateUsername = (name) => {
+  if (!name) return '未登录';
   const maxLen = window.innerWidth <= 480 ? 8 : 12;
   return name.length > maxLen ? `${name.substring(0, maxLen)}..` : name;
 };

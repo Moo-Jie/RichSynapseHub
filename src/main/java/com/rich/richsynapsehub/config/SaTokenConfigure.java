@@ -18,6 +18,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // SaInterceptor 拦截器添加到 Spring MVC 拦截器链中，设定拦截所有请求
-        registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(new SaInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns("/doChat/stream", "/doChat/manus/stream");
     }
 }
