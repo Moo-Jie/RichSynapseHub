@@ -43,7 +43,7 @@ const handleLogin = async () => {
         userName: data.data.userName,
         userAvatar: data.data.userAvatar
       });
-      router.push('/');
+      await router.push('/');
     }
   } catch (error) {
     console.error('登录失败:', error);

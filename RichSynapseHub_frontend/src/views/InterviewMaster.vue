@@ -40,7 +40,7 @@
 import {onBeforeUnmount, onMounted, ref} from 'vue';
 import {useHead} from '@vueuse/head';
 import ChatRoom from '../components/ChatRoom.vue';
-import {chatWithLoveApp} from '../api';
+import {chatWithInterviewApp} from '../api';
 import AppFooter from './AppFooter.vue';
 import {useRouter} from 'vue-router'
 import 'highlight.js/styles/github.css';
@@ -103,7 +103,7 @@ useHead({
 const messages = ref([])
 const chatId = ref('')
 const connectionStatus = ref('disconnected')
-const titleWords = ref(["Rich", 'Synapse', 'Hub -', '面试', '专家']);
+const titleWords = ref(["Rich", 'Syna','pse', 'Hub -', '面试', '专家']);
 
 let eventSource = null
 // 生成随机会话ID
@@ -134,7 +134,7 @@ const sendMessage = (message) => {
   addMessage('', false)
 
   connectionStatus.value = 'connecting'
-  eventSource = chatWithLoveApp(message, chatId.value)
+  eventSource = chatWithInterviewApp(message, chatId.value)
 
   // 监听SSE消息
   eventSource.onmessage = (event) => {
@@ -167,7 +167,7 @@ onMounted(() => {
   chatId.value = generateChatId()
 
   // 添加欢迎消息
-  addMessage('欢迎来到AI面试专家，请告诉我你的面试问题，我会给予专业建议和模拟面试。', false)
+  addMessage('欢迎来到AI面试专家，请询问我有关的面试中遇到的各类问题，我会给予专业建议和应对方案。', false)
 })
 
 // 组件销毁前关闭SSE连接
@@ -180,7 +180,6 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Indie+Flower&family=Pacifico&family=Short+Stack&display=swap');
-
 
 .interView-master-container {
   display: flex;
@@ -317,7 +316,6 @@ onBeforeUnmount(() => {
   }
 }
 
-
 .footer-container {
   margin-top: auto;
   position: relative;
@@ -397,12 +395,12 @@ onBeforeUnmount(() => {
 
 /* 输入框美化 */
 :deep(.message-input) {
-  background-color: white; /* 白底 */
-  color: black; /* 黑字 */
+  background-color: white;
+  color: black;
   border: 2px solid #e0e0e0;
   border-radius: 18px;
-  padding: 16px 20px; /* 增加高度 */
-  min-height: 60px; /* 设置最小高度 */
+  padding: 16px 20px;
+  min-height: 60px;
   font-size: 1.15rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
@@ -439,7 +437,6 @@ onBeforeUnmount(() => {
 
 /* 消息动画效果 */
 :deep(.message-container) {
-
   transform-origin: bottom;
 }
 
@@ -466,96 +463,100 @@ onBeforeUnmount(() => {
   }
 }
 
-:deep(.message-content h1) {
-  font-size: 1.9rem;
-  margin: 1.5rem 0 1rem;
-  border-bottom: 2px solid #4361ee;
-  padding-bottom: 0.5rem;
+/* 修复深度选择器警告 */
+:deep(.message-content) {
+  h1 {
+    font-size: 1.9rem;
+    margin: 1.5rem 0 1rem;
+    border-bottom: 2px solid #4361ee;
+    padding-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.7rem;
+    margin: 1.3rem 0 0.8rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    margin: 1.1rem 0 0.7rem;
+  }
+
+  p {
+    margin-bottom: 1.2rem;
+  }
+
+  ul, ol {
+    padding-left: 1.8rem;
+    margin-bottom: 1.2rem;
+  }
+
+  li {
+    margin-bottom: 0.6rem;
+  }
+
+  code {
+    background-color: rgba(67, 97, 238, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 1.05rem;
+  }
+
+  pre {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid #4361ee;
+  }
+
+  blockquote {
+    border-left: 4px solid #4361ee;
+    margin: 1.5rem 0;
+    color: #555;
+    background-color: rgba(67, 97, 238, 0.05);
+    border-radius: 0 8px 8px 0;
+    padding: 0.8rem 1.2rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    border: 1px solid #dee2e6;
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  th {
+    background-color: rgba(67, 97, 238, 0.1);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) {
+    background-color: rgba(67, 97, 238, 0.05);
+  }
 }
 
-:deep(.message-content h2) {
-  font-size: 1.7rem;
-  margin: 1.3rem 0 0.8rem;
-}
-
-:deep(.message-content h3) {
-  font-size: 1.5rem;
-  margin: 1.1rem 0 0.7rem;
-}
-
-:deep(.message-content p) {
-  margin-bottom: 1.2rem;
-}
-
-:deep(.message-content ul),
-:deep(.message-content ol) {
-  padding-left: 1.8rem;
-  margin-bottom: 1.2rem;
-}
-
-:deep(.message-content li) {
-  margin-bottom: 0.6rem;
-}
-
-:deep(.message-content code) {
-  background-color: rgba(67, 97, 238, 0.1);
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-
-  font-size: 1.05rem;
-}
-
-:deep(.message-content pre) {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
-  overflow-x: auto;
-  margin: 1.5rem 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  border-left: 4px solid #4361ee;
-}
-
-:deep(.message-content blockquote) {
-  border-left: 4px solid #4361ee;
-  margin: 1.5rem 0;
-  color: #555;
-  background-color: rgba(67, 97, 238, 0.05);
-  border-radius: 0 8px 8px 0;
-  padding: 0.8rem 1.2rem;
-}
-
-:deep(.message-content table) {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1.5rem 0;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-:deep(.message-content th),
-:deep(.message-content td) {
-  border: 1px solid #dee2e6;
-  padding: 0.75rem;
-  text-align: left;
-}
-
-:deep(.message-content th) {
-  background-color: rgba(67, 97, 238, 0.1);
-  font-weight: 600;
-}
-
-:deep(.message-content tr:nth-child(even)) {
-  background-color: rgba(67, 97, 238, 0.05);
-}
-
-/* 在移动端  */
+/* 在移动端 */
 @media (max-width: 480px) {
+  :deep(.message-content) {
+    font-size: 1.05rem;
+  }
+
   :deep(.message-input) {
     padding: 14px 16px;
-    min-height: 50px; /* 移动端最小高度 */
+    min-height: 50px;
     font-size: 1rem;
-    color: black; /* 确保移动端黑字 */
+    color: black;
   }
 
   .chat-area {
@@ -566,10 +567,6 @@ onBeforeUnmount(() => {
 
   .footer-container {
     padding-bottom: 1.0rem;
-  }
-
-  :deep(.message-content) {
-    font-size: 1.05rem;
   }
 
   :deep(.message-avatar) {
