@@ -1,4 +1,5 @@
-import axios from 'axios'
+import axios from 'axios';
+import {useUserStore} from '../stores/user';
 
 // 根据环境变量设置 API 基础 URL
 const API_BASE_URL = process.env.NODE_ENV === 'production'
@@ -11,17 +12,27 @@ const request = axios.create({
     timeout: 60000
 })
 
+// 请求拦截器
+request.interceptors.request.use(config => {
+    const userStore = useUserStore();
+    if (userStore.token) {
+        config.headers.satoken = userStore.token;
+    }
+    return config;
+});
+
 // 封装SSE连接
 export const connectSSE = (url, params, onMessage, onError) => {
-    // 构建带参数的URL
-    const queryString = Object.keys(params)
-        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-        .join('&')
+    const userStore = useUserStore();
+    const queryParams = new URLSearchParams({
+        ...params,
+        ...(userStore.token ? { satoken: userStore.token } : {})
+    }).toString();
 
-    const fullUrl = `${API_BASE_URL}${url}?${queryString}`
+    const fullUrl = `${API_BASE_URL}${url}?${queryParams}`;
 
-    // 创建EventSource
-    const eventSource = new EventSource(fullUrl)
+    const eventSource = new EventSource(fullUrl);
+
 
     eventSource.onmessage = event => {
         let data = event.data
@@ -44,17 +55,20 @@ export const connectSSE = (url, params, onMessage, onError) => {
     return eventSource
 }
 
-// AI 面试专家聊天
-export const chatWithLoveApp = (message, chatId) => {
+export const chatWithInterviewApp = (message, chatId) => {
     return connectSSE('/doChat/stream', {message, chatId})
 }
 
-//  AI 自主规划智能体聊天
 export const chatWithManus = (message) => {
     return connectSSE('/doChat/manus/stream', {message})
 }
 
-export default {
-    chatWithLoveApp,
-    chatWithManus
-} 
+export const loginUser = (data) => {
+    return request.post('/user/login', data)
+}
+
+export const registerUser = (data) => {
+    return request.post('/user/register', data)
+}
+
+export default request

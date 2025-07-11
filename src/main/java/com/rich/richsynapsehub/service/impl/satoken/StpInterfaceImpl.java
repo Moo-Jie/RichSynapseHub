@@ -39,14 +39,6 @@ public class StpInterfaceImpl implements StpInterface {
      */
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
-        // TODO 细粒度区分权限
-//        List<String> list = new ArrayList<String>();
-//        list.add("101");
-//        list.add("user.add");
-//        list.add("user.update");
-//        list.add("user.get");
-//         list.add("user.delete");
-//        list.add("art.*");
         return new ArrayList<>();
     }
 

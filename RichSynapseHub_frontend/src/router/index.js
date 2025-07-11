@@ -12,7 +12,7 @@ const routes = [
     },
     {
         path: '/interView-master',
-        name: 'LoveMaster',
+        name: 'InterviewMaster',
         component: () => import('../views/InterviewMaster.vue'),
         meta: {
             title: 'AI 面试专家 -  RichSynapseHub ',
@@ -26,6 +26,22 @@ const routes = [
         meta: {
             title: ' AI 自主规划智能体 -  RichSynapseHub ',
             description: ' AI 自主规划智能体是 RichSynapseHub 的全能助手，能解答各类专业问题，提供精准建议和解决方案'
+        }
+    },
+    {
+        path: '/login',
+        name: 'Login',
+        component: () => import('../views/Login.vue'),
+        meta: {
+            title: '用户登录 - RichSynapseHub'
+        }
+    },
+    {
+        path: '/register',
+        name: 'Register',
+        component: () => import('../views/Register.vue'),
+        meta: {
+            title: '用户注册 - RichSynapseHub'
         }
     }
 ]
