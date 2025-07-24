@@ -53,8 +53,8 @@ export const connectSSE = (url, params, onMessage, onError) => {
     return eventSource
 }
 
-export const chatWithInterviewApp = (message, chatId) => {
-    return connectSSE('/doChat/stream', {message, chatId})
+export const chatWithInterviewApp = (message, chatId, knowledgeIndex) => {
+    return connectSSE('/doChat/stream', {message, chatId, knowledgeIndex})
 }
 
 export const chatWithManus = (message) => {

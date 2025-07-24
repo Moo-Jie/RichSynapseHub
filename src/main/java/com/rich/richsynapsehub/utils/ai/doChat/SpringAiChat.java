@@ -1,16 +1,22 @@
 package com.rich.richsynapsehub.utils.ai.doChat;
 
 import com.rich.richsynapsehub.advisor.ChatLogAdvisor;
+import com.rich.richsynapsehub.advisor.rag.CloudRagAdvisorConfig;
+import com.rich.richsynapsehub.constant.SystemPromptConstant;
 import com.rich.richsynapsehub.utils.ai.chatMeory.FileChatMemory;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.tool.ToolCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.rich.richsynapsehub.constant.FilePathConstant.CHAT_FILE_SAVE_DIR;
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
@@ -27,23 +33,44 @@ import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvis
 @Component
 @Slf4j
 public class SpringAiChat {
-
-    @Resource
-    private Advisor interviewCloudRagAdvisor;
-
-    @Resource
-    private ToolCallback[] aiUseTools;
-
     /**
      * 引入 ChatClient
      */
     private final ChatClient chatClient;
 
     /**
+     * 用于指定知识库索引的 advisor 缓存
+     **/
+    private final Map<String, Advisor> ragAdvisors = new ConcurrentHashMap<>();
+
+    @Autowired
+    private CloudRagAdvisorConfig advisorFactory;
+
+    /**
+     * 初始化知识库映射
+     */
+    @PostConstruct
+    public void init() {
+        ragAdvisors.put("interview", advisorFactory.createRagAdvisor("面试专家知识库"));
+        ragAdvisors.put("shop", advisorFactory.createRagAdvisor("购物大师知识库"));
+    }
+
+    /**
+     * 通过指定 RAG 知识库索引来获取对应的 RAG Advisor 实例
+     *
+     * @param knowledgeIndex
+     * @return org.springframework.ai.chat.client.advisor.api.Advisor
+     * @author DuRuiChi
+     * @create 2025/7/24
+     **/
+    private Advisor getRagAdvisor(String knowledgeIndex) {
+        return ragAdvisors.computeIfAbsent(knowledgeIndex, k -> advisorFactory.createRagAdvisor(knowledgeIndex));
+    }
+
+    /**
      * 系统提示词
      */
-    private static final String DEFAULT_SYSTEM_PROMPT = "你是一个专业知识丰富的面试专家，擅长研究和回答各式各样的面试中遇到的问题，或面试题，同时你也喜欢和我聊天。" +
-            "(  格式设定：遵循 Markdown 格式的分标题输出； 字数至少在 500 以上 ；在输出之前先打印：“你好 ！我是 AI 面试专家。”)";
+    private static final String DEFAULT_SYSTEM_PROMPT = "你是一个专业的智能体 AI，擅长回答各种问题，你擅长以 Markdown 格式返回结果";
 
     /**
      * 初始化 ChatClient
@@ -59,7 +86,7 @@ public class SpringAiChat {
         // 自定义文件持久化 ChatMemory
         FileChatMemory chatMemory = new FileChatMemory(CHAT_FILE_SAVE_DIR);
         // 注册 ChatClient
-        chatClient = ChatClient.builder(dashscopeChatModel).defaultSystem(DEFAULT_SYSTEM_PROMPT)
+        chatClient = ChatClient.builder(dashscopeChatModel)
                 // 添加 Advisors ， 增强 ChatClient 的功能
                 // TODO 实现数据库持久化 ChatMemory
                 .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory),
@@ -77,23 +104,15 @@ public class SpringAiChat {
      * @author DuRuiChi
      * @create 2025/7/3
      **/
-    public String chat(String message, String userId) {
-        String text = chatClient
-                .prompt()
-                .user("现在我要问你一个面试题，请你以面试者的身份简明扼要地、总结性地、在短时间内快速地回答我的问题 " + message)
-                // 设置会话 ID 和 检索历史上下文长度
-                .advisors(spec -> spec
-                        .param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId)
+    public String chat(String message, String userId, String knowledgeIndex) {
+        Advisor ragAdvisor = getRagAdvisor(knowledgeIndex);
+
+        return chatClient.prompt()
+                .user("问题：" + message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                // 读取云 RAG 知识库
-//                .advisors(interviewCloudRagAdvisor)
-                .tools(aiUseTools)
-                .call()
-                .chatResponse()
-                .getResult()
-                .getOutput()
-                .getText();
-        return text;
+                .advisors(ragAdvisor)
+                .call().content();
     }
 
     /**
@@ -115,11 +134,9 @@ public class SpringAiChat {
      * @create 2025/7/3
      **/
     public StructuredOutput structuredOutputChat(String message, String userId) {
-        StructuredOutput entity = chatClient
-                .prompt()
+        StructuredOutput entity = chatClient.prompt()
                 .user("现在我要问你一个面试题，请你以面试者的身份简明扼要地、总结性地、在短时间内快速地回答我的问题 " + message)
-                .advisors(spec -> spec
-                        .param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .call()
                 // 指定返回的结果格式
@@ -130,22 +147,48 @@ public class SpringAiChat {
     }
 
     /**
-     * 参考上下文执行对话，传入消息 和 会话 ID 即可实现多轮对话 （流式输出）
+     * 参考上下文执行对话实现多轮对话 （流式输出）
      *
-     * @param message
-     * @param chatId
+     * @param message        消息
+     * @param chatId         会话 ID
+     * @param knowledgeIndex RAG 知识库类型
      * @return reactor.core.publisher.Flux<java.lang.String>
      * @author DuRuiChi
-     * @create 2025/7/7
+     * @create 2025/7/24
      **/
-    public Flux<String> doChatByStream(String message, String chatId) {
-        return chatClient
-                .prompt()
-                .user("现在我要问你一个面试题，请你以面试者的身份简明扼要地、总结性地、在短时间内快速地回答我的问题 " + message)
+    public Flux<String> doChatByStream(String message, String chatId, String knowledgeIndex) {
+        Advisor ragAdvisor = getRagAdvisor(knowledgeIndex);
+
+        // 根据知识库类型设置不同的系统上下文
+        String systemPrompt = switch (knowledgeIndex) {
+            // 面试专家
+            case "interview" -> SystemPromptConstant.INTERVIEW;
+            // 资深购物策略专家
+            case "shop" -> SystemPromptConstant.SHOP;
+            // 资深学习策略专家
+            case "study" -> SystemPromptConstant.STUDY;
+            // 资深健身策略专家
+            case "fitness" -> SystemPromptConstant.FITNESS;
+            // 资深旅行策略专家
+            case "travel" -> SystemPromptConstant.TRAVEL;
+            // 资深开发策略专家
+            case "code" -> SystemPromptConstant.CODE;
+            // 资深情感策略专家
+            case "emotion" -> SystemPromptConstant.EMOTION;
+            // 默认上下文
+            default -> DEFAULT_SYSTEM_PROMPT;
+        };
+
+        return chatClient.prompt()
+                // 上下文设定
+                .system(systemPrompt)
+                .user(message)
+                // advisors
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .advisors(ragAdvisor)
+                // 流式输出
                 .stream()
                 .content();
     }
-
 }

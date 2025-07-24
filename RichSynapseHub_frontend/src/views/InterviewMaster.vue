@@ -68,6 +68,8 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
+  breaks: true,
+  xhtmlOut: true,
   highlight: (str, lang) => {
     if (lang && hljs.getLanguage(lang)) {
       try {
@@ -103,7 +105,7 @@ useHead({
 const messages = ref([])
 const chatId = ref('')
 const connectionStatus = ref('disconnected')
-const titleWords = ref(["Rich", 'Syna','pse', 'Hub -', '面试', '专家']);
+const titleWords = ref(["Rich", 'Syna', 'pse', 'Hub -', '面试', '专家']);
 
 let eventSource = null
 // 生成随机会话ID
@@ -131,10 +133,10 @@ const sendMessage = (message) => {
 
   // 创建一个空的AI回复消息
   const aiMessageIndex = messages.value.length
-  addMessage('', false)
+  addMessage('### 你好，我是 RICH！\n', false)
 
   connectionStatus.value = 'connecting'
-  eventSource = chatWithInterviewApp(message, chatId.value)
+  eventSource = chatWithInterviewApp(message, chatId.value,'面试专家知识库')
 
   // 监听SSE消息
   eventSource.onmessage = (event) => {
@@ -167,7 +169,15 @@ onMounted(() => {
   chatId.value = generateChatId()
 
   // 添加欢迎消息
-  addMessage('欢迎来到AI面试专家，请询问我有关的面试中遇到的各类问题，我会给予专业建议和应对方案。', false)
+  addMessage(
+      '### 欢迎来到AI面试专家\n' +
+      '请询问我有关的面试中遇到的各类问题，我会给予专业建议和应对方案。\n\n' +
+      '#### 常见问题示例：\n' +
+      '- **我总是在面试中紧张怎么办？**\n' +
+      '- **面试中如何保持心态？**\n' +
+      '- **如何展现专业形象？**\n',
+      false
+  )
 })
 
 // 组件销毁前关闭SSE连接
@@ -240,7 +250,6 @@ onBeforeUnmount(() => {
   display: inline-block;
   perspective: 800px;
 }
-
 
 
 .glitch-title {

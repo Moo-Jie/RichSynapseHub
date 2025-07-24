@@ -14,7 +14,6 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.tool.ToolCallingManager;
-import org.springframework.ai.model.tool.ToolExecutionResult;
 import org.springframework.ai.tool.ToolCallback;
 
 import java.util.List;
@@ -112,7 +111,7 @@ public class ToolCallAgent extends ReActModeAgent {
                 return true;
             }
         } catch (Exception e) {
-            log.error(getName() + "的思考过程遇到了问题: " + e.getMessage());
+            log.error("{}的思考过程遇到了问题: {}", getName(), e.getMessage());
             getMessageList().add(new AssistantMessage("处理时遇到错误: " + e.getMessage()));
             return false;
         }

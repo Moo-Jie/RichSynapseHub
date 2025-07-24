@@ -30,33 +30,36 @@ public class AiChatController {
     /**
      * 普通 AI 对话 （响应式接口）
      *
-     * @param message
-     * @param chatId
+     * @param message   消息
+     * @param chatId    会话 ID
+     * @param knowledgeIndex    RAG 知识库类型
      * @return java.lang.String
      * @author DuRuiChi
      * @create 2025/7/7
      **/
     @GetMapping("/sync")
-    public String doChatBySync(String message, String chatId) {
+    public String doChatBySync(String message, String chatId, String knowledgeIndex) {
         if (chatId == null) {
             // 随机生成 chatId
             chatId = RandomUtil.randomString(5);
         }
-        return springAiChat.chat(message, chatId);
+        return springAiChat.chat(message, chatId,knowledgeIndex);
     }
 
     /**
      * 普通 AI 对话 （Flux 流式接口）
      *
-     * @param message
-     * @param chatId
+     * @param message   消息
+     * @param chatId    会话 ID
+     * @param knowledgeIndex    RAG 知识库类型
      * @return reactor.core.publisher.Flux<java.lang.String>
      * @author DuRuiChi
      * @create 2025/7/7
      **/
     @GetMapping(value = "/stream")
     public Flux<String> doChatByStream(
-            @RequestParam() String message,  // 添加必填校验
+            @RequestParam() String message,
+            @RequestParam()  String knowledgeIndex,
             @RequestParam(required = false) String chatId) {
         if (StringUtils.isBlank(message)) {
             return Flux.error(new IllegalArgumentException("消息内容不能为空"));
@@ -65,7 +68,7 @@ public class AiChatController {
             // 随机生成 chatId
             chatId = RandomUtil.randomString(5);
         }
-        return springAiChat.doChatByStream(message, chatId);
+        return springAiChat.doChatByStream(message, chatId,knowledgeIndex);
     }
 
     /**
