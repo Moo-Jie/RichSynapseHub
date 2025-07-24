@@ -8,12 +8,36 @@
           <input v-model="form.userAccount" type="text" required>
         </div>
         <div class="form-group">
+          <label>用户名</label>
+          <input v-model="form.userName" type="text" required>
+        </div>
+        <div class="form-group">
+          <label>手机号</label>
+          <input v-model="form.phoneNumber" type="tel" required>
+        </div>
+        <div class="form-group">
           <label>密码</label>
           <input v-model="form.userPassword" type="password" required>
         </div>
         <div class="form-group">
           <label>确认密码</label>
           <input v-model="form.checkPassword" type="password" required>
+        </div>
+        <div class="form-group">
+          <label>邮箱</label>
+          <input v-model="form.email" type="email" required>
+        </div>
+        <div class="form-group">
+          <label>学历</label>
+          <input v-model="form.grade" type="text" >
+        </div>
+        <div class="form-group">
+          <label>工作经验</label>
+          <input v-model="form.workExperience" type="text" >
+        </div>
+        <div class="form-group">
+          <label>擅长方向</label>
+          <input v-model="form.expertiseDirection" type="text">
         </div>
         <button type="submit" class="auth-button">注册</button>
       </form>
@@ -34,7 +58,13 @@ const router = useRouter();
 const form = ref({
   userAccount: '',
   userPassword: '',
-  checkPassword: ''
+  checkPassword: '',
+  userName: '',
+  phoneNumber: '',
+  email: '',
+  grade: "",
+  workExperience: "",
+  expertiseDirection: "",
 });
 
 const handleRegister = async () => {

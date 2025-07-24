@@ -1,16 +1,15 @@
 package com.rich.richsynapsehub.controller;
 
-import cn.dev33.satoken.annotation.SaCheckRole;
-import cn.dev33.satoken.annotation.SaMode;
 import cn.hutool.core.util.RandomUtil;
 import com.rich.richsynapsehub.agent.RichSynapseHubManus;
-import com.rich.richsynapsehub.constant.UserConstant;
 import com.rich.richsynapsehub.utils.ai.doChat.SpringAiChat;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
@@ -38,7 +37,6 @@ public class AiChatController {
      * @create 2025/7/7
      **/
     @GetMapping("/sync")
-    @SaCheckRole(value = {UserConstant.ADMIN_ROLE, UserConstant.DEFAULT_ROLE}, mode = SaMode.OR)
     public String doChatBySync(String message, String chatId) {
         if (chatId == null) {
             // 随机生成 chatId
@@ -57,7 +55,12 @@ public class AiChatController {
      * @create 2025/7/7
      **/
     @GetMapping(value = "/stream")
-    public Flux<String> doChatByStream(String message, String chatId) {
+    public Flux<String> doChatByStream(
+            @RequestParam() String message,  // 添加必填校验
+            @RequestParam(required = false) String chatId) {
+        if (StringUtils.isBlank(message)) {
+            return Flux.error(new IllegalArgumentException("消息内容不能为空"));
+        }
         if (chatId == null) {
             // 随机生成 chatId
             chatId = RandomUtil.randomString(5);
@@ -74,7 +77,7 @@ public class AiChatController {
      * @create 2025/7/7
      **/
     @GetMapping("/manus/stream")
-    public SseEmitter doChatWithManus(String message) {
+    public SseEmitter doChatWithManus(@RequestParam() String message) {
         RichSynapseHubManus richSynapseHubManus = new RichSynapseHubManus(aiUseTools, dashscopeChatModel);
         return richSynapseHubManus.runStream(message);
     }

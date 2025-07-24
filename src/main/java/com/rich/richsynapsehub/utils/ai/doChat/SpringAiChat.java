@@ -43,7 +43,7 @@ public class SpringAiChat {
      * 系统提示词
      */
     private static final String DEFAULT_SYSTEM_PROMPT = "你是一个专业知识丰富的面试专家，擅长研究和回答各式各样的面试中遇到的问题，或面试题，同时你也喜欢和我聊天。" +
-            "(  格式设定：先打印：“你好 ！我是 AI 面试专家 ，字数在 300 以上。”)";
+            "(  格式设定：遵循 Markdown 格式的分标题输出； 字数至少在 500 以上 ；在输出之前先打印：“你好 ！我是 AI 面试专家。”)";
 
     /**
      * 初始化 ChatClient

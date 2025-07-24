@@ -1,5 +1,4 @@
 import axios from 'axios';
-import {useUserStore} from '../stores/user';
 
 // 根据环境变量设置 API 基础 URL
 const API_BASE_URL = process.env.NODE_ENV === 'production'
@@ -20,12 +19,18 @@ request.interceptors.request.use(config => {
 
 // 封装SSE连接
 export const connectSSE = (url, params, onMessage, onError) => {
-    const fullUrl = `${API_BASE_URL}${url}`;
+    const queryParams = new URLSearchParams(params).toString();
+    const fullUrl = `${API_BASE_URL}${url}?${queryParams}`;
 
     const eventSource = new EventSource(fullUrl, {
         withCredentials: true
     });
-
+    eventSource.onopen = () => {
+        if (!params.message || params.message.trim() === '') {
+            onError(new Error('消息内容不能为空'));
+            eventSource.close();
+        }
+    }
 
     eventSource.onmessage = event => {
         let data = event.data

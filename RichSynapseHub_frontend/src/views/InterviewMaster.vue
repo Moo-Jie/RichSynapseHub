@@ -155,7 +155,7 @@ const sendMessage = (message) => {
 
   // 监听SSE错误
   eventSource.onerror = (error) => {
-    console.error('SSE Error:', error)
+    // console.error('SSE Error:', error)
     connectionStatus.value = 'error'
     eventSource.close()
   }
