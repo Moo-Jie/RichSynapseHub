@@ -4,6 +4,7 @@ import com.rich.richsynapsehub.advisor.ChatLogAdvisor;
 import com.rich.richsynapsehub.advisor.rag.CloudRagAdvisorConfig;
 import com.rich.richsynapsehub.constant.SystemPromptConstant;
 import com.rich.richsynapsehub.utils.ai.chatMeory.FileChatMemory;
+import com.rich.richsynapsehub.utils.ai.chatMeory.RedisChatMemory;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,8 @@ public class SpringAiChat {
      **/
     private final Map<String, Advisor> ragAdvisors = new ConcurrentHashMap<>();
 
+    private final RedisChatMemory redisChatMemory;
+
     @Autowired
     private CloudRagAdvisorConfig advisorFactory;
 
@@ -80,19 +83,16 @@ public class SpringAiChat {
      * @author DuRuiChi
      * @create 2025/7/3
      **/
-    public SpringAiChat(ChatModel dashscopeChatModel) {
+    public SpringAiChat(ChatModel dashscopeChatModel, RedisChatMemory redisChatMemory) {
         // 内存存储 ChatMemory，重启后丢失
 //        ChatMemory chatMemory = new InMemoryChatMemory();
         // 自定义文件持久化 ChatMemory
-        FileChatMemory chatMemory = new FileChatMemory(CHAT_FILE_SAVE_DIR);
+//        FileChatMemory chatMemory = new FileChatMemory(CHAT_FILE_SAVE_DIR);
         // 注册 ChatClient
-        chatClient = ChatClient.builder(dashscopeChatModel)
-                // 添加 Advisors ， 增强 ChatClient 的功能
-                // TODO 实现数据库持久化 ChatMemory
-                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory),
-//                        new ReReadingAdvisor(), // 自定义 Re2 增强 ，会消耗更多 token
-                        new ChatLogAdvisor() // 自定义日志增强
-                ).build();
+        this.redisChatMemory = redisChatMemory;
+        this.chatClient = ChatClient.builder(dashscopeChatModel)
+                .defaultAdvisors(new MessageChatMemoryAdvisor(this.redisChatMemory),
+                new ChatLogAdvisor()).build();
     }
 
     /**
@@ -107,12 +107,7 @@ public class SpringAiChat {
     public String chat(String message, String userId, String knowledgeIndex) {
         Advisor ragAdvisor = getRagAdvisor(knowledgeIndex);
 
-        return chatClient.prompt()
-                .user("问题：" + message)
-                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId)
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                .advisors(ragAdvisor)
-                .call().content();
+        return chatClient.prompt().user("问题：" + message).advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId).param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)).advisors(ragAdvisor).call().content();
     }
 
     /**
@@ -134,11 +129,7 @@ public class SpringAiChat {
      * @create 2025/7/3
      **/
     public StructuredOutput structuredOutputChat(String message, String userId) {
-        StructuredOutput entity = chatClient.prompt()
-                .user("现在我要问你一个面试题，请你以面试者的身份简明扼要地、总结性地、在短时间内快速地回答我的问题 " + message)
-                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId)
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                .call()
+        StructuredOutput entity = chatClient.prompt().user("现在我要问你一个面试题，请你以面试者的身份简明扼要地、总结性地、在短时间内快速地回答我的问题 " + message).advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId).param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)).call()
                 // 指定返回的结果格式
                 .entity(StructuredOutput.class);
         log.info("结构化后的结果：{}", entity);
@@ -181,14 +172,10 @@ public class SpringAiChat {
 
         return chatClient.prompt()
                 // 上下文设定
-                .system(systemPrompt)
-                .user(message)
+                .system(systemPrompt).user(message)
                 // advisors
-                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                .advisors(ragAdvisor)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId).param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)).advisors(ragAdvisor)
                 // 流式输出
-                .stream()
-                .content();
+                .stream().content();
     }
 }

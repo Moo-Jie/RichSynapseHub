@@ -30,6 +30,7 @@ public class FileChatMemory implements ChatMemory {
 
     /**
      * 初始化 Kryo 序列化器
+     * 使用 Kryo 高性能序列化（比 JDK 序列化快 10 倍+，体积小 3-5 倍）
      **/
     static {
         kryo.setRegistrationRequired(false);
